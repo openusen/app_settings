@@ -80,7 +80,9 @@ class AppSettingsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
         val asAnotherTask = call.argument("asAnotherTask") ?: false
 
-        if (call.method == "wifi") {
+        if (call.method == "network") {
+            openSettings(Settings.ACTION_NETWORK_OPERATOR_SETTINGS, asAnotherTask)
+        } else if (call.method == "wifi") {
             openSettings(Settings.ACTION_WIFI_SETTINGS, asAnotherTask)
         } else if (call.method == "location") {
             openSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS, asAnotherTask)

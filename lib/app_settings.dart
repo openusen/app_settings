@@ -15,6 +15,15 @@ class AppSettings {
     });
   }
 
+  /// Future async method call to open NETWORK settings.
+  static Future<void> openNetworkSettings({
+    bool asAnotherTask = false,
+  }) async {
+    _channel.invokeMethod('network', {
+      'asAnotherTask': asAnotherTask,
+    });
+  }
+
   /// Future async method call to open location settings.
   static Future<void> openLocationSettings({
     bool asAnotherTask = false,
