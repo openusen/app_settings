@@ -16,10 +16,10 @@ class AppSettings {
   }
 
   /// Future async method call to open NETWORK settings.
-  static Future<void> openNetworkSettings({
+  static Future<void> openInternetSettings({
     bool asAnotherTask = false,
   }) async {
-    _channel.invokeMethod('network', {
+    _channel.invokeMethod('internet', {
       'asAnotherTask': asAnotherTask,
     });
   }
