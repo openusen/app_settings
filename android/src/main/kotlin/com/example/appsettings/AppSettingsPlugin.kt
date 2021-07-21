@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -81,8 +80,8 @@ class AppSettingsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
         val asAnotherTask = call.argument("asAnotherTask") ?: false
 
-        if (call.method == "internet") {
-            openSettings(Settings.ACTION_INTERNET_CONNECTIVITY, asAnotherTask)
+        if (call.method == "network") {
+            openSettings(Settings.ACTION_WIRELESS_SETTINGS, asAnotherTask)
         } else if (call.method == "wifi") {
             openSettings(Settings.ACTION_WIFI_SETTINGS, asAnotherTask)
         } else if (call.method == "location") {
