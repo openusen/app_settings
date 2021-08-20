@@ -4,8 +4,7 @@ version: 4.1.1
 homepage: https://github.com/spencerccf/app_settings
 
 environment:
-  #sdk: ">=2.12.0 <3.0.0"
-  sdk: ">=2.10.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.10.0"
 
 dependencies:
@@ -24,7 +23,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.example.appsettings
+        package: com.example.app_settings
         pluginClass: AppSettingsPlugin
       ios:
         pluginClass: AppSettingsPlugin
