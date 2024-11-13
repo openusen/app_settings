@@ -12,10 +12,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
 
-
-class AppSettingsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
+class AppSettingsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
     /// Private variable to hold instance of Registrar for creating Intents.
     private lateinit var activity: Activity
 
@@ -39,16 +37,26 @@ class AppSettingsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         this.activity.startActivity(intent)
     }
 
-    /// Main constructor to setup the Registrar
-    constructor(registrar: Registrar) : this() {
-        this.activity = registrar.activity()
+    private fun openNotificationSettings(asAnotherTask: Boolean = false) {
+        when (Build.VERSION.SDK_INT) {
+            Build.VERSION_CODES.O -> {
+                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, this@AppSettingsPlugin.activity.packageName)
+                    if (asAnotherTask) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                this.activity.startActivity(intent)
+            }
+
+            Build.VERSION_CODES.M ->
+                openSettings(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS, asAnotherTask)
+        }
     }
 
-    companion object {
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "app_settings")
-            channel.setMethodCallHandler(AppSettingsPlugin(registrar))
+    private fun openVpnSettings(asAnotherTask: Boolean = false) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            openSettings(Settings.ACTION_VPN_SETTINGS, asAnotherTask)
+        } else {
+            openSettings("android.net.vpn.SETTINGS", asAnotherTask)
         }
     }
 
@@ -80,48 +88,25 @@ class AppSettingsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
         val asAnotherTask = call.argument("asAnotherTask") ?: false
 
-        if (call.method == "wifi") {
-            openSettings(Settings.ACTION_WIFI_SETTINGS, asAnotherTask)
-        } else if (call.method == "location") {
-            openSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS, asAnotherTask)
-        } else if (call.method == "security") {
-            openSettings(Settings.ACTION_SECURITY_SETTINGS, asAnotherTask)
-        } else if (call.method == "bluetooth") {
-            openSettings(Settings.ACTION_BLUETOOTH_SETTINGS, asAnotherTask)
-        } else if (call.method == "data_roaming") {
-            openSettings(Settings.ACTION_DATA_ROAMING_SETTINGS, asAnotherTask)
-        } else if (call.method == "date") {
-            openSettings(Settings.ACTION_DATE_SETTINGS, asAnotherTask)
-        } else if (call.method == "display") {
-            openSettings(Settings.ACTION_DISPLAY_SETTINGS, asAnotherTask)
-        } else if (call.method == "notification") {
-            if (Build.VERSION.SDK_INT >= 21) {
-                val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                        .putExtra(Settings.EXTRA_APP_PACKAGE, this.activity.packageName)
-                if (asAnotherTask) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                this.activity.startActivity(intent)
-            } else {
-                openSettings(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS, asAnotherTask)
+        when (call.method) {
+            "wifi" -> openSettings(Settings.ACTION_WIFI_SETTINGS, asAnotherTask)
+            "location" -> openSettings(Settings.ACTION_LOCATION_SOURCE_SETTINGS, asAnotherTask)
+            "security" -> openSettings(Settings.ACTION_SECURITY_SETTINGS, asAnotherTask)
+            "bluetooth" -> openSettings(Settings.ACTION_BLUETOOTH_SETTINGS, asAnotherTask)
+            "data_roaming" -> openSettings(Settings.ACTION_DATA_ROAMING_SETTINGS, asAnotherTask)
+            "date" -> openSettings(Settings.ACTION_DATE_SETTINGS, asAnotherTask)
+            "display" -> openSettings(Settings.ACTION_DISPLAY_SETTINGS, asAnotherTask)
+            "notification" -> openNotificationSettings(asAnotherTask)
+            "nfc" -> openSettings(Settings.ACTION_NFC_SETTINGS, asAnotherTask)
+            "sound" -> openSettings(Settings.ACTION_SOUND_SETTINGS, asAnotherTask)
+            "internal_storage" -> openSettings(Settings.ACTION_INTERNAL_STORAGE_SETTINGS, asAnotherTask)
+            "battery_optimization" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                openSettings(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, asAnotherTask)
             }
-        } else if (call.method == "nfc") {
-            openSettings(Settings.ACTION_NFC_SETTINGS, asAnotherTask)
-        } else if (call.method == "sound") {
-            openSettings(Settings.ACTION_SOUND_SETTINGS, asAnotherTask)
-        } else if (call.method == "internal_storage") {
-            openSettings(Settings.ACTION_INTERNAL_STORAGE_SETTINGS, asAnotherTask)
-        } else if (call.method == "battery_optimization") {
-            openSettings(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, asAnotherTask)
-        } else if (call.method == "vpn") {
-            if(Build.VERSION.SDK_INT >= 24) {
-                openSettings(Settings.ACTION_VPN_SETTINGS, asAnotherTask)
-            }else{
-                openSettings("android.net.vpn.SETTINGS", asAnotherTask)
-            }
-        } else if (call.method == "app_settings") {
-            openAppSettings(asAnotherTask)
-        }
-        else if (call.method == "device_settings") {
-            openSettings(Settings.ACTION_SETTINGS, asAnotherTask)
+
+            "vpn" -> openVpnSettings(asAnotherTask)
+            "app_settings" -> openAppSettings(asAnotherTask)
+            "device_settings" -> openSettings(Settings.ACTION_SETTINGS, asAnotherTask)
         }
     }
 }
